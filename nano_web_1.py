@@ -127,14 +127,10 @@ elif option2 == 'bedMethyl':
         input_dnn['methylation_call']=input_dnn['methylation_call'].fillna(0)
         torch_tensor = torch.tensor(input_dnn['methylation_call'].values)   
         
-        
-        input_cpgs = bedMethyl_sample['probe_id'].tolist() 
         col1, col2 = st.columns(2)
         col1.metric(label="Number of Input  features", value=len(input_bed))
         col2.metric(label="Number of Features mapped to Trainingset", num_Features)
-        input_dnn = example_bed.merge(input_bed,how='left')
-        input_dnn['methylation_call']=input_dnn['methylation_call'].fillna(0)
-        torch_tensor = torch.tensor(input_dnn['methylation_call'].values)        
+       
 
         DM.eval()
         with torch.no_grad():
