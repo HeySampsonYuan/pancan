@@ -63,27 +63,10 @@ DM.load_state_dict(model)
 DM.to(device)
 print(DM)
 
-st.write("Hello, you are running on ", device, 'device')
-#option1 = st.radio('Pick A Trainningset:', ('Brain Tumor','Pan-cancer'))
-option1 = st.radio('Pick a Trainingset', ['Pan-cancer_v5i','Brain Tumor'])
 
-if option1 == 'Pan-cancer_v5i':
-    model_files = pickle.load(urlopen("https://charitede-my.sharepoint.com/:u:/g/personal/dongsheng_yuan_charite_de/Ef0MpN0rITNKmMJWET2MNJMBM8Lhf4yvc0mj7GKbtnh18A?e=Wc4cpu"))
-elif option1 == 'Brain Tumor':
-    model_files = pickle.load(urlopen("https://charitede-my.sharepoint.com/personal/dongsheng_yuan_charite_de/_layouts/52/download.aspx?share=EYQkyF1dK9VApCOYaBw6VJ0B4z-tHs2wO8uBwAUYPNRI_Q"))
-    
-#with open(model_files_path,'rb') as f:
-#    model_files = pickle.load(f)
 anno_cpg = pickle.load(urlopen("https://charitede-my.sharepoint.com/personal/dongsheng_yuan_charite_de/_layouts/52/download.aspx?share=EYRxxhSOFjhLrbi30iEkKqYB6l3UVHbRGS3-NPTbAbv4ew"))
 
-model = model_files[0]
-enc =  model_files[1]
-example_bed = model_files[2]
-last_key = list(model)[-1]
-DM = NN_classifier(model[last_key].size()[1],model[last_key].size()[0])
-DM.load_state_dict(model)
-DM.to(device)
-print(DM)
+
 def match_bs(anno_cpg,input_bed):
     res_bed = anno_cpg.merge(input_bed,how='left',on=["CpG_chrm", "CpG_beg"])
     res_bed = res_bed[~res_bed['beta_values'].isna()]
