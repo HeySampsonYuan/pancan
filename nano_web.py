@@ -22,7 +22,7 @@ from urllib.request import urlopen
 #import pyreadr
 st.title ("Methylation Based Tumor Classifier ")
 #st.image("MHC_Digital_Treatments_Available_For_Blood_Cancer_Part_13_925x389pix_150322n_01_dc4d07f20e.jpg")
-st.subheader("Video tutorial: How to use this classifier?")
+st.subheader("please using bed file containing [chrom chromStart chromEnd methylation_call probe_id] as columns")
 #st.video("S_example · Streamlit - Google Chrome 2022-12-19 15-28-09.mp4")
 
 
