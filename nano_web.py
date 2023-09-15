@@ -47,13 +47,13 @@ st.write("Hello, you are running on ", device, 'device')
 option1 = st.radio('Pick a Trainingset', ['Pan-cancer_v5i','Brain Tumor'])
 
 if option1 == 'Pan-cancer_v5i':
-    model_files_path = 'pancan_devel_v5i_NN.pkl'
+    model_files_path = model_files = pickle.load(urlopen("https://charitede-my.sharepoint.com/personal/dongsheng_yuan_charite_de/_layouts/52/download.aspx?share=EYHf66EDVJVPrjPaBimBcocBIGwCFvzx8MHOkrthOYj8CQ"))
 elif option1 == 'Brain Tumor':
-    model_files = 'Capper_et_al_NN.pkl'
+    model_files = pickle.load(urlopen("https://charitede-my.sharepoint.com/personal/dongsheng_yuan_charite_de/_layouts/52/download.aspx?share=EZDvisj5GWlGg26ZalOpnx0BZdRGfRfye23mSKmY61shxw"))
     
 #with open(model_files_path,'rb') as f:
 #    model_files = pickle.load(f)
-model_files =  pickle.load(urlopen("https://charitede-my.sharepoint.com/personal/dongsheng_yuan_charite_de/_layouts/52/download.aspx?share=EZDvisj5GWlGg26ZalOpnx0BZdRGfRfye23mSKmY61shxw"))
+
 model = model_files[0]
 enc =  model_files[1]
 example_bed = model_files[2]
