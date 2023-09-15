@@ -64,7 +64,7 @@ DM.to(device)
 print(DM)
 
 
-option2 = st.selectbox('Types of Input Data',('bed file'))    
+option2 = st.selectbox('Types of Input Data',(['bed file']))    
 
 if option2 == 'bed file':
     uploaded_file = st.file_uploader('Upload a bed file as the example: ')
