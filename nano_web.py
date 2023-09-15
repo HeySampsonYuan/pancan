@@ -17,6 +17,8 @@ from annotated_text import annotated_text
 import matplotlib.pyplot as plt
 import seaborn as sns
 from resource import getrusage, RUSAGE_SELF
+from urllib.request import urlopen
+
 #import pyreadr
 st.title ("Methylation Based Tumor Classifier ")
 #st.image("MHC_Digital_Treatments_Available_For_Blood_Cancer_Part_13_925x389pix_150322n_01_dc4d07f20e.jpg")
@@ -49,8 +51,9 @@ if option1 == 'Pan-cancer_v5i':
 elif option1 == 'Brain Tumor':
     model_files = 'Capper_et_al_NN.pkl'
     
-with open(model_files_path,'rb') as f:
-    model_files = pickle.load(f)
+#with open(model_files_path,'rb') as f:
+#    model_files = pickle.load(f)
+model_files =  pickle.load(urlopen("https://charitede-my.sharepoint.com/personal/dongsheng_yuan_charite_de/_layouts/52/download.aspx?share=EZDvisj5GWlGg26ZalOpnx0BZdRGfRfye23mSKmY61shxw"))
 model = model_files[0]
 enc =  model_files[1]
 example_bed = model_files[2]
