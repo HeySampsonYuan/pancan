@@ -79,7 +79,7 @@ if option2 == 'bed file':
         input_cpgs = input_bed['probe_id'].tolist() 
         col1, col2 = st.columns(2)
         col1.metric(label="Number of Input CpG features", value=len(input_bed))
-        col2.metric(label="Number of Features mapped to Trainingset", value=len(set(input_cpgs)&set(probeIDs)))
+        col2.metric(label="Number of Features mapped to Trainingset", value=len(set(input_cpgs)&set(example_bed['probe_id'].tolist())))
         input_dnn = example_bed.merge(input_bed,how='left')
         input_dnn['methylation_call']=input_dnn['methylation_call'].fillna(0)
         torch_tensor = torch.tensor(input_dnn['methylation_call'].values)        
