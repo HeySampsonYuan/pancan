@@ -53,7 +53,108 @@ elif option1 == 'Brain Tumor':
     
 #with open(model_files_path,'rb') as f:
 #    model_files = pickle.load(f)
+anno_cpg = pickle.load(urlopen("https://charitede-my.sharepoint.com/personal/dongsheng_yuan_charite_de/_layouts/52/download.aspx?share=EYRxxhSOFjhLrbi30iEkKqYB6l3UVHbRGS3-NPTbAbv4ew"))
 
+model = model_files[0]
+enc =  model_files[1]
+example_bed = model_files[2]
+last_key = list(model)[-1]
+DM = NN_classifier(model[last_key].size()[1],model[last_key].size()[0])
+DM.load_state_dict(model)
+DM.to(device)
+print(DM)
+def match_bs(anno_cpg,input_bed):
+    res_bed = anno_cpg.merge(input_bed,how='left',on=["CpG_chrm", "CpG_beg"])
+    res_bed = res_bed[~res_bed['beta_values'].isna()]
+    input_bed = res_bed.filter(['CpG_chrm','CpG_beg','CpG_end_x','probe_strand','beta_values','Probe_ID'])
+    input_bed = input_bed.rename(columns={'beta_values':'methylation_call','Probe_ID':'probe_id'})
+    input_bed['methylation_call'] = np.where((input_bed.methylation_call < 60 ),-1,input_bed.methylation_call)
+    input_bed['methylation_call'] = np.where((input_bed.methylation_call >= 60 ), 1,input_bed.methylation_call)
+    input_dnn = example_bed.merge(input_bed,how='left')
+    input_dnn['methylation_call']=input_dnn['methylation_call'].fillna(0)
+    return input_dnn,len(input_bed)
+
+option2 = st.selectbox('Types of Input Data',(['bed file','bedMethyl']))    
+
+if option2 == 'bed file':
+    uploaded_file = st.file_uploader('Upload a bed file as the example: ')
+    if uploaded_file != None:
+        st.success("File successfully uploaded")
+
+        input_bed = pd.read_csv(uploaded_file,delim_whitespace=True)
+
+        st.write(input_bed.head())
+        input_bed['methylation_call'] = np.where((input_bed.methylation_call < 0.6 ),-1,input_bed.methylation_call)
+        input_bed['methylation_call'] = np.where((input_bed.methylation_call > 0.6 ), 1,input_bed.methylation_call)
+        input_cpgs = input_bed['probe_id'].tolist() 
+        col1, col2 = st.columns(2)
+        col1.metric(label="Number of Input CpG features", value=len(input_bed))
+        col2.metric(label="Number of Features mapped to Trainingset", value=len(set(input_cpgs)&set(example_bed['probe_id'].tolist())))
+        input_dnn = example_bed.merge(input_bed,how='left')
+        input_dnn['methylation_call']=input_dnn['methylation_call'].fillna(0)
+        torch_tensor = torch.tensor(input_dnn['methylation_call'].values)        
+
+        DM.eval()
+        with torch.no_grad():
+            y_val_pred_masked = DM(torch_tensor.float().to(device))
+            y_pred_softmax = torch.log_softmax(y_val_pred_masked,dim=0)
+            _, y_pred_tags = torch.max(y_pred_softmax, dim = 0)
+            label_pre = enc.inverse_transform([y_pred_tags.cpu()])
+            proba = torch.max(torch.softmax( (y_val_pred_masked - y_val_pred_masked.mean().item())/y_val_pred_masked.std( unbiased=False).item(), dim = 0)).item()
+            cs = torch.softmax( (y_val_pred_masked - y_val_pred_masked.mean().item())/y_val_pred_masked.std(unbiased=False).item(), dim = 0)
+            #proba = torch.topk(cs, 1).values.tolist()
+
+        annotated_text("The Prediction of our model is",   (f"{label_pre}","", "#ea9999") )
+        annotated_text("The Confidence Score of the Prediction is",   (f"{proba}","", "#ea9999") )
+        annotated_text("The Top5 Predictions")
+
+        fig = plt.figure(figsize=(10, 4))
+        df_bar = pd.DataFrame({'Confidence_Score':torch.topk(cs, 5).values.tolist(),'Tumor_Type':enc.inverse_transform(torch.topk(cs, 5).indices.tolist()).tolist()})
+        sns.barplot(data=df_bar, x="Confidence_Score", y="Tumor_Type",orient='h')
+        st.pyplot(fig)
+    else:
+        st.warning("please upload your file")
+elif option2 == 'bedMethyl':
+    uploaded_file = st.file_uploader('Upload a bed file as the example: ')
+    if uploaded_file != None:
+        st.success("File successfully uploaded")
+
+        #input_bed = pd.read_csv(uploaded_file,delim_whitespace=True)
+        input_bed = pd.read_csv(uploaded_file,delim_whitespace=True,header=None)
+        input_bed.columns =['CpG_chrm','CpG_beg','CpG_end','Name','Score','Strandedness','start_codon','stop_codon','RGB','Coverage','beta_values']
+        bedMethyl_sample,num_Features = match_bs(anno_cpg,input_bed)
+        st.write(bedMethyl_sample.head())
+        input_dnn = example_bed.merge(bedMethyl_sample,how='left')
+        input_dnn['methylation_call']=input_dnn['methylation_call'].fillna(0)
+        torch_tensor = torch.tensor(input_dnn['methylation_call'].values)   
+        
+        col1, col2 = st.columns(2)
+        col1.metric(label="Number of Input features", value=len(input_bed))
+        col2.metric(label="Number of Features mapped to Trainingset", value=num_Features)
+       
+
+        DM.eval()
+        with torch.no_grad():
+            y_val_pred_masked = DM(torch_tensor.float().to(device))
+            y_pred_softmax = torch.log_softmax(y_val_pred_masked,dim=0)
+            _, y_pred_tags = torch.max(y_pred_softmax, dim = 0)
+            label_pre = enc.inverse_transform([y_pred_tags.cpu()])
+            proba = torch.max(torch.softmax( (y_val_pred_masked - y_val_pred_masked.mean().item())/y_val_pred_masked.std( unbiased=False).item(), dim = 0)).item()
+            cs = torch.softmax( (y_val_pred_masked - y_val_pred_masked.mean().item())/y_val_pred_masked.std(unbiased=False).item(), dim = 0)
+            #proba = torch.topk(cs, 1).values.tolist()
+
+        annotated_text("The Prediction of our model is",   (f"{label_pre}","", "#ea9999") )
+        annotated_text("The Confidence Score of the Prediction is",   (f"{proba}","", "#ea9999") )
+        annotated_text("The Top5 Predictions")
+
+        fig = plt.figure(figsize=(10, 4))
+        df_bar = pd.DataFrame({'Confidence_Score':torch.topk(cs, 5).values.tolist(),'Tumor_Type':enc.inverse_transform(torch.topk(cs, 5).indices.tolist()).tolist()})
+        sns.barplot(data=df_bar, x="Confidence_Score", y="Tumor_Type",orient='h')
+        st.pyplot(fig)
+    else:
+        st.warning("please upload your file")
+        
+'''
 model = model_files[0]
 enc =  model_files[1]
 example_bed = model_files[2]
@@ -103,3 +204,4 @@ if option2 == 'bed file':
         st.pyplot(fig)
     else:
         st.warning("please upload your file")
+'''
