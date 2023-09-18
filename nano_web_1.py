@@ -49,7 +49,7 @@ option1 = st.radio('Pick a Trainingset', ['Pan-cancer_v5i','Brain Tumor'])
 if option1 == 'Pan-cancer_v5i':
     model_files = pickle.load(urlopen("https://charitede-my.sharepoint.com/personal/dongsheng_yuan_charite_de/_layouts/52/download.aspx?share=ETnaFmBmdFxCnx4pygZJ4fkBUKUQ6v1lgMhTjkiESlrFsQ"))
 elif option1 == 'Brain Tumor':
-    model_files = pickle.load(urlopen("https://charitede-my.sharepoint.com/personal/dongsheng_yuan_charite_de/_layouts/52/download.aspx?share=EYQkyF1dK9VApCOYaBw6VJ0B4z-tHs2wO8uBwAUYPNRI_Q"))
+    model_files = pickle.load(urlopen("https://charitede-my.sharepoint.com/personal/dongsheng_yuan_charite_de/_layouts/52/download.aspx?share=Ef0MpN0rITNKmMJWET2MNJMBnoxgIEFe-3ktqM5YqTpEcQ"))
     
 #with open(model_files_path,'rb') as f:
 #    model_files = pickle.load(f)
